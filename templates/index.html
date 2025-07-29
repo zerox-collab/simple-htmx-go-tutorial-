@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go + HTMX Beginner Exercises</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <script type="module">
+        import { codeToHtml } from 'https://esm.sh/shiki@1.0.0'
+
+        // --- MERGED TRANSLATION DATA ---
+        window.translations = {
+            en: {
+                title: "🚀 Go + HTMX Training Ground",
+                liveDemo: "Live Demo",
+                code: "Code",
+                reset: "Reset",
+                copy: "Copy",
+                copied: "Copied!",
+                keyPoints: "Key Learning Points:",
+                serverResponse: "Server response:",
+                // Exercise 1
+                exercise1Title: "Exercise 1: Click to Change Text",
+                exercise1Concept: "🎯 Core Concept: Swapping an Element",
+                exercise1ConceptDesc: "The most basic HTMX action. When you click the button, it asks the server for new HTML and replaces itself with the response.",
+                exercise1Point1: "hx-post: Sends a request to the server.",
+                exercise1Point2: 'hx-swap="outerHTML": Replaces the entire element (the button itself) with the HTML from the server\'s response.',
+                ex1ClickMe: "Click Me",
+                // Exercise 2
+                exercise2Title: "Exercise 2: Click to Load Content",
+                exercise2Concept: "🎯 Core Concept: Targeting a Different Element",
+                exercise2ConceptDesc: "This shows how to make one element (a button) load content into a different element (a div).",
+                exercise2Point1: "hx-get: Sends a request when the button is clicked.",
+                exercise2Point2: "hx-target: A CSS selector (`#ex2-target`) tells HTMX where to put the response. The default swap strategy is `innerHTML`.",
+                loadContent: "Load Content",
+                // Exercise 3
+                exercise3Title: "Exercise 3: Polling for Updates",
+                exercise3Concept: "🎯 Core Concept: Timed Triggers",
+                exercise3ConceptDesc: "HTMX isn't just for clicks. It can trigger requests on a timer, perfect for live data like clocks, notifications, or dashboards.",
+                exercise3Point1: 'hx-trigger="every 2s": This modifier tells HTMX to send a GET request to the specified URL every 2 seconds.',
+                exercise3Point2: "The element will update itself with the response automatically.",
+                // Exercise 4
+                exercise4Title: "Exercise 4: Send User Input",
+                exercise4Concept: "🎯 Core Concept: Event-Driven Requests",
+                exercise4ConceptDesc: "Trigger requests from any event, like typing into an input. Debouncing prevents sending too many requests.",
+                exercise4Point1: 'hx-trigger="keyup changed delay:500ms": Send a request on the `keyup` event, but only if the value `changed`, and wait `500ms` after the user stops typing.',
+                exercise4Point2: "The input's `name` and `value` are automatically sent as URL parameters.",
+                typeHere: "Type here...",
+                // Exercise 5
+                exercise5Title: "Exercise 5: Form Submission & Loading Indicators",
+                exercise5Concept: "🎯 Core Concept: Form Handling & UX Feedback",
+                exercise5ConceptDesc: "Handle form submissions without a page reload and provide visual feedback with loading indicators.",
+                exercise5Point1: "hx-post: Serializes the form data and sends it in a POST request.",
+                exercise5Point2: "hx-indicator: A CSS selector for an element to show while the request is in flight.",
+                name: "Name",
+                submit: "Submit",
+                // Exercise 6
+                exercise6Title: "Exercise 6: Click To Edit",
+                exercise6Concept: "🎯 Core Concept: In-Place Editing",
+                exercise6ConceptDesc: "A common web pattern where the server sends a form to edit data, and then replaces the form with the updated view upon submission.",
+                exercise6Point1: "State Transitions: The server controls the UI by sending back either the 'view' or 'edit' template.",
+                exercise6Point2: "HTTP Methods: Use `GET` to request the edit form and `PUT` (or POST) to submit the update.",
+                clickToEdit: "Click To Edit",
+                save: "Save",
+                cancel: "Cancel",
+            },
+            ar: {
+                title: "🚀 ساحة تدريب Go + HTMX",
+                liveDemo: "العرض المباشر",
+                code: "الكود",
+                reset: "إعادة تعيين",
+                copy: "نسخ",
+                copied: "تم النسخ!",
+                keyPoints: "نقاط التعلم الرئيسية:",
+                serverResponse: "استجابة الخادم:",
+                // Exercise 1
+                exercise1Title: "التمرين 1: النقر لتغيير النص",
+                exercise1Concept: "🎯 المفهوم الأساسي: تبديل عنصر",
+                exercise1ConceptDesc: "أبسط إجراء في HTMX. عند النقر على الزر، يطلب HTML جديد من الخادم ويستبدل نفسه بالاستجابة.",
+                exercise1Point1: "hx-post: يرسل طلبًا إلى الخادم.",
+                exercise1Point2: "hx-swap=\"outerHTML\": يستبدل العنصر بأكمله (الزر نفسه) بـ HTML من استجابة الخادم.",
+                ex1ClickMe: "انقر هنا",
+                // Exercise 2
+                exercise2Title: "التمرين 2: النقر لتحميل المحتوى",
+                exercise2Concept: "🎯 المفهوم الأساسي: استهداف عنصر مختلف",
+                exercise2ConceptDesc: "يوضح هذا كيفية جعل عنصر (زر) يقوم بتحميل المحتوى في عنصر آخر (div).",
+                exercise2Point1: "hx-get: يرسل طلبًا عند النقر على الزر.",
+                exercise2Point2: "hx-target: محدد CSS (`#ex2-target`) يخبر HTMX بمكان وضع الاستجابة. استراتيجية التبديل الافتراضية هي `innerHTML`.",
+                loadContent: "تحميل المحتوى",
+                // Exercise 3
+                exercise3Title: "التمرين 3: التحقق الدوري للتحديثات",
+                exercise3Concept: "🎯 المفهوم الأساسي: المشغلات الزمنية",
+                exercise3ConceptDesc: "HTMX ليس للنقرات فقط. يمكنه إطلاق طلبات بناءً على مؤقت، وهو مثالي للبيانات الحية مثل الساعات أو الإشعارات.",
+                exercise3Point1: "hx-trigger=\"every 2s\": يخبر هذا المعدل HTMX بإرسال طلب GET كل ثانيتين.",
+                exercise3Point2: "سيقوم العنصر بتحديث نفسه بالاستجابة تلقائيًا.",
+                // Exercise 4
+                exercise4Title: "التمرين 4: إرسال مدخلات المستخدم",
+                exercise4Concept: "🎯 المفهوم الأساسي: الطلبات المستندة إلى الأحداث",
+                exercise4ConceptDesc: "إطلاق الطلبات من أي حدث، مثل الكتابة في حقل إدخال. التأخير يمنع إرسال عدد كبير جدًا من الطلبات.",
+                exercise4Point1: "hx-trigger=\"keyup changed delay:500ms\": يرسل طلبًا عند حدث `keyup`، فقط إذا تغيرت القيمة، وينتظر `500ms` بعد توقف المستخدم عن الكتابة.",
+                exercise4Point2: "يتم إرسال `name` و `value` للإدخال تلقائيًا كمعلمات URL.",
+                typeHere: "اكتب هنا...",
+                // Exercise 5
+                exercise5Title: "التمرين 5: إرسال النموذج ومؤشرات التحميل",
+                exercise5Concept: "🎯 المفهوم الأساسي: معالجة النماذج وردود الفعل للمستخدم",
+                exercise5ConceptDesc: "معالجة إرسال النماذج دون إعادة تحميل الصفحة وتوفير ردود فعل بصرية باستخدام مؤشرات التحميل.",
+                exercise5Point1: "hx-post: يقوم بتسلسل بيانات النموذج وإرسالها في طلب POST.",
+                exercise5Point2: "hx-indicator: محدد CSS لعنصر يتم عرضه أثناء تنفيذ الطلب.",
+                name: "الاسم",
+                submit: "إرسال",
+                // Exercise 6
+                exercise6Title: "التمرين 6: النقر للتحرير",
+                exercise6Concept: "🎯 المفهوم الأساسي: التحرير في المكان",
+                exercise6ConceptDesc: "نمط ويب شائع حيث يرسل الخادم نموذجًا لتحرير البيانات، ثم يستبدل النموذج بالعرض المحدث عند الإرسال.",
+                exercise6Point1: "انتقالات الحالة: يتحكم الخادم في واجهة المستخدم عن طريق إرجاع قالب \"العرض\" أو \"التحرير\".",
+                exercise6Point2: "طرق HTTP: استخدم `GET` لطلب نموذج التحرير و `PUT` (أو POST) لإرسال التحديث.",
+                clickToEdit: "انقر للتحرير",
+                save: "حفظ",
+                cancel: "إلغاء",
+            }
+        };
+
+        // --- CORE JAVASCRIPT FUNCTIONS ---
+
+        window.highlightCode = async function(code, lang = 'html') {
+            return await codeToHtml(code, { lang: lang, theme: 'github-light' });
+        };
+        
+        window.renderCode = async function(containerId, endpoint) {
+            const container = document.getElementById(containerId);
+            if (!container || container.innerHTML) return; 
+
+            try {
+                const response = await fetch(endpoint);
+                const code = await response.text();
+                const highlighted = await highlightCode(code, 'html');
+                container.innerHTML = highlighted;
+                container.setAttribute('data-code', code);
+            } catch (error) {
+                container.innerHTML = '<p class="text-danger">Error loading code.</p>';
+            }
+        };
+
+        window.copyCode = function(containerId) {
+            const container = document.getElementById(containerId);
+            const btn = container.closest('.code-pane').querySelector('.copy-btn');
+            const code = container.getAttribute('data-code');
+            if (!code || !btn) return;
+
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = btn.innerHTML;
+                const t = window.translations[window.currentLang];
+                btn.innerHTML = `<i class="bi bi-check-lg"></i> ${t.copied}`;
+                btn.classList.add('btn-success');
+                btn.classList.remove('btn-outline-secondary');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-secondary');
+                }, 2000);
+            });
+        };
+
+        window.switchLanguage = function(lang) {
+            window.currentLang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+            updatePageLanguage();
+        };
+
+        function updatePageLanguage() {
+            const t = window.translations[window.currentLang];
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                const key = el.getAttribute('data-translate');
+                if (t[key]) el.textContent = t[key];
+            });
+            document.querySelectorAll('[data-translate-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-translate-placeholder');
+                if (t[key]) el.placeholder = t[key];
+            });
+            document.querySelectorAll('.copy-btn-text').forEach(el => {
+                el.textContent = t.copy;
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            window.currentLang = 'en';
+            updatePageLanguage();
+            document.querySelectorAll('.code-content[data-endpoint]').forEach(el => {
+                renderCode(el.id, el.dataset.endpoint);
+            });
+        });
+    </script>
+    <style>
+        :root { --bs-border-color-translucent: rgba(0, 0, 0, 0.1); }
+        body { background-color: #f8f9fa; padding: 2rem 0; }
+        .language-switcher { position: fixed; top: 1rem; right: 1.5rem; z-index: 1050; }
+        [dir="rtl"] .language-switcher { right: auto; left: 1.5rem; }
+        .exercise { background-color: #ffffff; border: 1px solid var(--bs-border-color-translucent); border-radius: 0.75rem; margin-bottom: 2.5rem; box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.05); overflow: hidden; }
+        .exercise-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--bs-border-color-translucent); }
+        .exercise-body { padding: 1.5rem; }
+        .concept-box { background-color: #e9ecef; border-left: 4px solid #0d6efd; padding: 1rem 1.25rem; margin-bottom: 1rem; border-radius: 0 0.25rem 0.25rem 0; }
+        [dir="rtl"] .concept-box { border-left: none; border-right: 4px solid #0d6efd; border-radius: 0.25rem 0 0 0.25rem; }
+        .key-points { background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 0.25rem; padding: 1rem; margin-bottom: 1.5rem; }
+        .interactive-zone { border: 1px solid var(--bs-border-color-translucent); border-radius: 0.5rem; }
+        .pane-header { background-color: #f8f9fa; padding: 0.75rem 1rem; border-bottom: 1px solid var(--bs-border-color-translucent); display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; font-weight: 600; color: #495057; }
+        .demo-pane { padding: 1.5rem; }
+        .code-pane { background-color: #f8f9fa; }
+        .code-pane .pane-header { border-bottom: none; }
+        .code-content { background-color: #fff; border-top: 1px solid var(--bs-border-color-translucent); }
+        .code-content pre { margin: 0; padding: 1rem !important; border-radius: 0; }
+        @media (min-width: 768px) {
+            .demo-pane { border-right: 1px solid var(--bs-border-color-translucent); }
+            [dir="rtl"] .demo-pane { border-right: none; border-left: 1px solid var(--bs-border-color-translucent); }
+        }
+        @media (max-width: 767.98px) {
+            .demo-pane { border-bottom: 1px solid var(--bs-border-color-translucent); }
+        }
+        .htmx-indicator { display: none; }
+        .htmx-request .htmx-indicator { display: inline-block; }
+    </style>
+</head>
+<body>
+
+    <div class="language-switcher">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="switchLanguage('en')">EN</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="switchLanguage('ar')">AR</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <header class="text-center mb-5">
+            <h1 data-translate="title">🚀 Go + HTMX Training Ground</h1>
+        </header>
+
+        <section class="exercise">
+            <div class="exercise-header"><h2 class="h4 mb-0" data-translate="exercise1Title">Exercise 1: Click to Change Text</h2></div>
+            <div class="exercise-body">
+                <div class="concept-box"><h5 class="h6" data-translate="exercise1Concept">🎯 Core Concept: Swapping an Element</h5><p class="small mb-0" data-translate="exercise1ConceptDesc">The most basic HTMX action. When you click the button, it asks the server for new HTML and replaces itself with the response.</p></div>
+                <div class="key-points"><h6 class="h6" data-translate="keyPoints">Key Learning Points:</h6><ul class="mb-0 small"><li data-translate="exercise1Point1"><strong>hx-post:</strong> Sends a request to the server.</li><li data-translate="exercise1Point2"><strong>hx-swap="outerHTML":</strong> Replaces the entire element (the button itself) with the HTML from the server's response.</li></ul></div>
+                <div class="interactive-zone mt-4">
+                    <div class="row g-0">
+                        <div class="col-md-6"><div class="pane-header"><span data-translate="liveDemo">Live Demo</span><button class="btn btn-sm btn-outline-secondary" hx-get="/exercise1/reset" hx-target="#ex1-target" hx-swap="outerHTML" data-translate="reset">Reset</button></div><div class="demo-pane"><button id="ex1-target" class="btn btn-primary" hx-post="/exercise1" hx-swap="outerHTML" data-translate="ex1ClickMe">Click Me</button></div></div>
+                        <div class="col-md-6"><div class="code-pane"><div class="pane-header"><span data-translate="code">Code</span><button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode('ex1-code-content')"><i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span></button></div><div id="ex1-code-content" class="code-content" data-endpoint="/code/exercise1"></div></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="exercise">
+            <div class="exercise-header"><h2 class="h4 mb-0" data-translate="exercise2Title">Exercise 2: Click to Load Content</h2></div>
+            <div class="exercise-body">
+                <div class="concept-box"><h5 class="h6" data-translate="exercise2Concept">🎯 Core Concept: Targeting a Different Element</h5><p class="small mb-0" data-translate="exercise2ConceptDesc">This shows how to make one element (a button) load content into a different element (a div).</p></div>
+                <div class="key-points"><h6 class="h6" data-translate="keyPoints">Key Learning Points:</h6><ul class="mb-0 small"><li data-translate="exercise2Point1"><strong>hx-get:</strong> Sends a request when the button is clicked.</li><li data-translate="exercise2Point2"><strong>hx-target:</strong> A CSS selector (`#ex2-target`) tells HTMX where to put the response. The default swap strategy is `innerHTML`.</li></ul></div>
+                <div class="interactive-zone mt-4">
+                    <div class="row g-0">
+                        <div class="col-md-6"><div class="pane-header"><span data-translate="liveDemo">Live Demo</span><button class="btn btn-sm btn-outline-secondary" hx-get="/exercise2/reset" hx-target="#ex2-target" data-translate="reset">Reset</button></div><div class="demo-pane"><button class="btn btn-primary" hx-get="/exercise2" hx-target="#ex2-target" data-translate="loadContent">Load Content</button><div id="ex2-target" class="mt-3 p-3 bg-light rounded border" style="min-height: 50px;"></div></div></div>
+                        <div class="col-md-6"><div class="code-pane"><div class="pane-header"><span data-translate="code">Code</span><button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode('ex2-code-content')"><i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span></button></div><div id="ex2-code-content" class="code-content" data-endpoint="/code/exercise2"></div></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="exercise">
+            <div class="exercise-header"><h2 class="h4 mb-0" data-translate="exercise3Title">Exercise 3: Polling for Updates</h2></div>
+            <div class="exercise-body">
+                <div class="concept-box"><h5 class="h6" data-translate="exercise3Concept">🎯 Core Concept: Timed Triggers</h5><p class="small mb-0" data-translate="exercise3ConceptDesc">HTMX isn't just for clicks. It can trigger requests on a timer, perfect for live data like clocks, notifications, or dashboards.</p></div>
+                <div class="key-points"><h6 class="h6" data-translate="keyPoints">Key Learning Points:</h6><ul class="mb-0 small"><li data-translate="exercise3Point1"><strong>hx-trigger="every 2s":</strong> This modifier tells HTMX to send a GET request to the specified URL every 2 seconds.</li><li data-translate="exercise3Point2">The element will update itself with the response automatically.</li></ul></div>
+                <div class="interactive-zone mt-4">
+                    <div class="row g-0">
+                        <div class="col-md-6"><div class="pane-header"><span data-translate="liveDemo">Live Demo</span><button class="btn btn-sm btn-outline-secondary" hx-get="/exercise3/reset" hx-target="#ex3-target" data-translate="reset">Reset</button></div><div class="demo-pane"><div id="ex3-target" class="alert alert-info" hx-get="/exercise3" hx-trigger="load, every 2s">Loading server time...</div></div></div>
+                        <div class="col-md-6"><div class="code-pane"><div class="pane-header"><span data-translate="code">Code</span><button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode('ex3-code-content')"><i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span></button></div><div id="ex3-code-content" class="code-content" data-endpoint="/code/exercise3"></div></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="exercise">
+            <div class="exercise-header"><h2 class="h4 mb-0" data-translate="exercise4Title">Exercise 4: Send User Input</h2></div>
+            <div class="exercise-body">
+                <div class="concept-box"><h5 class="h6" data-translate="exercise4Concept">🎯 Core Concept: Event-Driven Requests</h5><p class="small mb-0" data-translate="exercise4ConceptDesc">Trigger requests from any event, like typing into an input. Debouncing prevents sending too many requests.</p></div>
+                <div class="key-points"><h6 class="h6" data-translate="keyPoints">Key Learning Points:</h6><ul class="mb-0 small"><li data-translate="exercise4Point1"><strong>hx-trigger="keyup changed delay:500ms":</strong> Send a request on the `keyup` event, but only if the value `changed`, and wait `500ms` after the user stops typing.</li><li data-translate="exercise4Point2">The input's `name` and `value` are automatically sent as URL parameters.</li></ul></div>
+                <div class="interactive-zone mt-4">
+                    <div class="row g-0">
+                        <div class="col-md-6"><div class="pane-header"><span data-translate="liveDemo">Live Demo</span><button class="btn btn-sm btn-outline-secondary" hx-get="/exercise4/reset" hx-target="#ex4-output" onclick="document.querySelector('#ex4-input').value = ''" data-translate="reset">Reset</button></div><div class="demo-pane"><input type="text" id="ex4-input" class="form-control" name="user-input" hx-get="/exercise4" hx-trigger="keyup changed delay:500ms" hx-target="#ex4-output" data-translate-placeholder="typeHere" placeholder="Type here..."><div class="mt-2"><span data-translate="serverResponse">Server response:</span> <strong id="ex4-output" class="text-primary"></strong></div></div></div>
+                        <div class="col-md-6"><div class="code-pane"><div class="pane-header"><span data-translate="code">Code</span><button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode('ex4-code-content')"><i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span></button></div><div id="ex4-code-content" class="code-content" data-endpoint="/code/exercise4"></div></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="exercise">
+            <div class="exercise-header"><h2 class="h4 mb-0" data-translate="exercise5Title">Exercise 5: Form Submission & Loading Indicators</h2></div>
+            <div class="exercise-body">
+                <div class="concept-box"><h5 class="h6" data-translate="exercise5Concept">🎯 Core Concept: Form Handling & UX Feedback</h5><p class="small mb-0" data-translate="exercise5ConceptDesc">Handle form submissions without a page reload and provide visual feedback with loading indicators.</p></div>
+                <div class="key-points"><h6 class="h6" data-translate="keyPoints">Key Learning Points:</h6><ul class="mb-0 small"><li data-translate="exercise5Point1"><strong>hx-post:</strong> Serializes the form data and sends it in a POST request.</li><li data-translate="exercise5Point2"><strong>hx-indicator:</strong> A CSS selector for an element to show while the request is in flight.</li></ul></div>
+                <div class="interactive-zone mt-4">
+                    <div class="row g-0">
+                        <div class="col-md-6"><div class="pane-header"><span data-translate="liveDemo">Live Demo</span><button class="btn btn-sm btn-outline-secondary" hx-get="/exercise5/reset" hx-target="#ex5-response-wrapper" hx-swap="innerHTML" data-translate="reset">Reset</button></div><div class="demo-pane" id="ex5-response-wrapper"><div id="ex5-response"><form hx-post="/exercise5/submit" hx-target="#ex5-response" hx-swap="outerHTML" hx-indicator="#ex5-indicator"><div class="mb-3"><label for="name-ex5" class="form-label" data-translate="name">Name</label><input type="text" id="name-ex5" name="name" class="form-control" required></div><button type="submit" class="btn btn-success"><span data-translate="submit">Submit</span><span class="spinner-border spinner-border-sm htmx-indicator" id="ex5-indicator"></span></button></form></div></div></div>
+                        <div class="col-md-6"><div class="code-pane"><div class="pane-header"><span data-translate="code">Code</span><button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode('ex5-code-content')"><i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span></button></div><div id="ex5-code-content" class="code-content" data-endpoint="/code/exercise5"></div></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="exercise">
+            <div class="exercise-header"><h2 class="h4 mb-0" data-translate="exercise6Title">Exercise 6: Click To Edit</h2></div>
+            <div class="exercise-body">
+                <div class="concept-box"><h5 class="h6" data-translate="exercise6Concept">🎯 Core Concept: In-Place Editing</h5><p class="small mb-0" data-translate="exercise6ConceptDesc">A common web pattern where the server sends a form to edit data, and then replaces the form with the updated view upon submission.</p></div>
+                <div class="key-points"><h6 class="h6" data-translate="keyPoints">Key Learning Points:</h6><ul class="mb-0 small"><li data-translate="exercise6Point1"><strong>State Transitions:</strong> The server controls the UI by sending back either the 'view' or 'edit' template.</li><li data-translate="exercise6Point2"><strong>HTTP Methods:</strong> Use `GET` to request the edit form and `PUT` (or POST) to submit the update.</li></ul></div>
+                <div class="interactive-zone mt-4">
+                    <div class="row g-0">
+                        <div class="col-md-6"><div class="pane-header"><span data-translate="liveDemo">Live Demo</span><button class="btn btn-sm btn-outline-secondary" hx-get="/exercise6/reset" hx-target="#contact-1" hx-swap="outerHTML" data-translate="reset">Reset</button></div><div class="demo-pane"><div id="contact-1" class="p-2 border rounded" hx-target="this" hx-swap="outerHTML"><p class="mb-1"><strong>Name:</strong> Jane Doe</p><p class="mb-2"><strong>Email:</strong> jane.doe@example.com</p><button class="btn btn-primary btn-sm" hx-get="/exercise6/contact/1" data-translate="clickToEdit">Click To Edit</button></div></div></div>
+                        <div class="col-md-6"><div class="code-pane"><div class="pane-header"><span data-translate="code">Code</span><button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode('ex6-code-content')"><i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span></button></div><div id="ex6-code-content" class="code-content" data-endpoint="/code/exercise6"></div></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</body>
+</html>

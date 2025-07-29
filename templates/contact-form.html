@@ -1,0 +1,18 @@
+<div id="contact-1" hx-target="this" hx-swap="outerHTML">
+  <form hx-put="/exercise4/contact/1" hx-target="#contact-1" hx-swap="outerHTML">
+    <div class="mb-2">
+      <label class="form-label" data-translate="name">Name</label>
+      <input type="text" name="name" class="form-control" value="{{.Name}}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label" data-translate="email">Email</label>
+      <input type="email" name="email" class="form-control" value="{{.Email}}">
+    </div>
+    <button type="submit" class="btn btn-success">
+      <span data-translate="save">Save</span>
+    </button>
+    <button type="button" class="btn btn-secondary" hx-get="/exercise4/contact/1">
+      <span data-translate="cancel">Cancel</span>
+    </button>
+  </form>
+</div>
