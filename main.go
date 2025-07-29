@@ -20,7 +20,8 @@ func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		// Set CORS headers
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, HX-Request, HX-Trigger, HX-Target, HX-Current-URL, HX-Boosted, HX-Trigger-Name, HX-Prompt")
+		w.Header().Set("Access-Control-Expose-Headers", "HX-Location, HX-Push-Url, HX-Redirect, HX-Refresh, HX-Replace-Url, HX-Reswap, HX-Retarget, HX-Reselect, HX-Trigger, HX-Trigger-After-Settle, HX-Trigger-After-Swap")
 		
 		// Handle preflight requests
 		if r.Method == "OPTIONS" {
