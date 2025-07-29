@@ -206,7 +206,7 @@ func addCodeEndpoints() {
         <h1>Exercise 1: Click to Change Text</h1>
         <p>Click the button below to see it change!</p>
         
-        <button id="main-button" class="btn btn-primary"
+        <button id="ex1-target" class="btn btn-primary"
                 hx-post="%s/exercise1"
                 hx-swap="outerHTML">
             Click Me
@@ -215,7 +215,7 @@ func addCodeEndpoints() {
         <div class="mt-3">
             <button class="btn btn-secondary"
                     hx-get="%s/exercise1/reset"
-                    hx-target="#main-button"
+                    hx-target="#ex1-target"
                     hx-swap="outerHTML">
                 Reset
             </button>
