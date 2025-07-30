@@ -128,14 +128,14 @@
             return await codeToHtml(code, { lang: lang, theme: 'github-light' });
         };
         
-        window.renderCode = async function(containerId, endpoint) {
+        window.renderCode = async function(containerId, endpoint, lang = 'html') {
             const container = document.getElementById(containerId);
             if (!container || container.innerHTML) return; 
 
             try {
                 const response = await fetch(endpoint);
                 const code = await response.text();
-                const highlighted = await highlightCode(code, 'html');
+                const highlighted = await highlightCode(code, lang);
                 container.innerHTML = highlighted;
                 container.setAttribute('data-code', code);
             } catch (error) {
@@ -220,6 +220,40 @@
             updatePageLanguage();
         };
 
+        window.showTab = function(btn, tabId) {
+            const pane = btn.closest('.code-pane');
+            
+            // Deactivate all tab buttons in the same group
+            const buttons = btn.parentElement.querySelectorAll('button');
+            buttons.forEach(b => {
+                b.classList.remove('active');
+            });
+            
+            // Activate the clicked button
+            btn.classList.add('active');
+
+            // Hide all tab content in the pane
+            pane.querySelectorAll('.tab-content').forEach(c => {
+                c.style.display = 'none';
+            });
+
+            // Show the selected tab content
+            const activeContent = document.getElementById(tabId);
+            activeContent.style.display = 'block';
+
+            // Render code if not already loaded
+            if (activeContent.dataset.endpoint) {
+                const lang = activeContent.dataset.lang || 'html';
+                renderCode(tabId, activeContent.dataset.endpoint, lang);
+            }
+        }
+
+        window.getActiveCodeContentId = function(copyBtn) {
+            const pane = copyBtn.closest('.code-pane');
+            const activeTab = pane.querySelector('.tab-content:not([style*="display:none"])');
+            return activeTab ? activeTab.id : null;
+        }
+
         function updatePageLanguage() {
             const t = window.translations[window.currentLang];
             document.querySelectorAll('[data-translate]').forEach(el => {
@@ -239,7 +273,11 @@
             window.currentLang = 'en';
             updatePageLanguage();
             document.querySelectorAll('.code-content[data-endpoint]').forEach(el => {
-                renderCode(el.id, el.dataset.endpoint);
+                const lang = el.dataset.lang || 'html';
+                // Only render the active tabs on initial load
+                if (el.style.display !== 'none') {
+                    renderCode(el.id, el.dataset.endpoint, lang);
+                }
             });
         });
     </script>
@@ -294,7 +332,21 @@
                 <div class="interactive-zone mt-4">
                     <div class="row g-0">
                         <div class="col-md-6"><div class="pane-header"><span data-translate="liveDemo">Live Demo</span><button class="btn btn-sm btn-outline-secondary" hx-get="/exercise1/reset" hx-target="#ex1-target" hx-swap="outerHTML" data-translate="reset">Reset</button></div><div class="demo-pane"><button id="ex1-target" class="btn btn-primary" hx-post="/exercise1" hx-swap="outerHTML" data-translate="ex1ClickMe">Click Me</button></div></div>
-                        <div class="col-md-6"><div class="code-pane"><div class="pane-header"><span data-translate="code">Code</span><button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode('ex1-code-content')"><i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span></button></div><div id="ex1-code-content" class="code-content" data-endpoint="/code/exercise1"></div></div></div>
+                        <div class="col-md-6">
+                            <div class="code-pane">
+                                <div class="pane-header">
+                                    <div class="d-flex align-items-center">
+                                        <button class="btn btn-sm btn-light me-2 active" onclick="showTab(this, 'ex1-html')">HTML</button>
+                                        <button class="btn btn-sm btn-light" onclick="showTab(this, 'ex1-go')">Go</button>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode(getActiveCodeContentId(this))">
+                                        <i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span>
+                                    </button>
+                                </div>
+                                <div id="ex1-html" class="code-content tab-content" data-endpoint="/code/exercise1" data-lang="html"></div>
+                                <div id="ex1-go" class="code-content tab-content" data-endpoint="/code/exercise1/go" data-lang="go" style="display:none;"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -308,7 +360,21 @@
                 <div class="interactive-zone mt-4">
                     <div class="row g-0">
                         <div class="col-md-6"><div class="pane-header"><span data-translate="liveDemo">Live Demo</span><button class="btn btn-sm btn-outline-secondary" hx-get="/exercise2/reset" hx-target="#ex2-target" data-translate="reset">Reset</button></div><div class="demo-pane"><button class="btn btn-primary" hx-get="/exercise2" hx-target="#ex2-target" data-translate="loadContent">Load Content</button><div id="ex2-target" class="mt-3 p-3 bg-light rounded border" style="min-height: 50px;"></div></div></div>
-                        <div class="col-md-6"><div class="code-pane"><div class="pane-header"><span data-translate="code">Code</span><button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode('ex2-code-content')"><i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span></button></div><div id="ex2-code-content" class="code-content" data-endpoint="/code/exercise2"></div></div></div>
+                        <div class="col-md-6">
+                            <div class="code-pane">
+                                <div class="pane-header">
+                                    <div class="d-flex align-items-center">
+                                        <button class="btn btn-sm btn-light me-2 active" onclick="showTab(this, 'ex2-html')">HTML</button>
+                                        <button class="btn btn-sm btn-light" onclick="showTab(this, 'ex2-go')">Go</button>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode(getActiveCodeContentId(this))">
+                                        <i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span>
+                                    </button>
+                                </div>
+                                <div id="ex2-html" class="code-content tab-content" data-endpoint="/code/exercise2" data-lang="html"></div>
+                                <div id="ex2-go" class="code-content tab-content" data-endpoint="/code/exercise2/go" data-lang="go" style="display:none;"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -322,7 +388,21 @@
                 <div class="interactive-zone mt-4">
                     <div class="row g-0">
                         <div class="col-md-6"><div class="pane-header"><span data-translate="liveDemo">Live Demo</span><button class="btn btn-sm btn-outline-secondary" hx-get="/exercise3/reset" hx-target="#ex3-target" data-translate="reset">Reset</button></div><div class="demo-pane"><div id="ex3-target" class="alert alert-info" hx-get="/exercise3" hx-trigger="load, every 2s">Loading server time...</div></div></div>
-                        <div class="col-md-6"><div class="code-pane"><div class="pane-header"><span data-translate="code">Code</span><button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode('ex3-code-content')"><i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span></button></div><div id="ex3-code-content" class="code-content" data-endpoint="/code/exercise3"></div></div></div>
+                        <div class="col-md-6">
+                            <div class="code-pane">
+                                <div class="pane-header">
+                                    <div class="d-flex align-items-center">
+                                        <button class="btn btn-sm btn-light me-2 active" onclick="showTab(this, 'ex3-html')">HTML</button>
+                                        <button class="btn btn-sm btn-light" onclick="showTab(this, 'ex3-go')">Go</button>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode(getActiveCodeContentId(this))">
+                                        <i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span>
+                                    </button>
+                                </div>
+                                <div id="ex3-html" class="code-content tab-content" data-endpoint="/code/exercise3" data-lang="html"></div>
+                                <div id="ex3-go" class="code-content tab-content" data-endpoint="/code/exercise3/go" data-lang="go" style="display:none;"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -336,7 +416,21 @@
                 <div class="interactive-zone mt-4">
                     <div class="row g-0">
                         <div class="col-md-6"><div class="pane-header"><span data-translate="liveDemo">Live Demo</span><button class="btn btn-sm btn-outline-secondary" hx-get="/exercise4/reset" hx-target="#ex4-output" onclick="document.querySelector('#ex4-input').value = ''" data-translate="reset">Reset</button></div><div class="demo-pane"><input type="text" id="ex4-input" class="form-control" name="user-input" hx-get="/exercise4" hx-trigger="keyup changed delay:500ms" hx-target="#ex4-output" data-translate-placeholder="typeHere" placeholder="Type here..."><div class="mt-2"><span data-translate="serverResponse">Server response:</span> <strong id="ex4-output" class="text-primary"></strong></div></div></div>
-                        <div class="col-md-6"><div class="code-pane"><div class="pane-header"><span data-translate="code">Code</span><button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode('ex4-code-content')"><i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span></button></div><div id="ex4-code-content" class="code-content" data-endpoint="/code/exercise4"></div></div></div>
+                        <div class="col-md-6">
+                            <div class="code-pane">
+                                <div class="pane-header">
+                                    <div class="d-flex align-items-center">
+                                        <button class="btn btn-sm btn-light me-2 active" onclick="showTab(this, 'ex4-html')">HTML</button>
+                                        <button class="btn btn-sm btn-light" onclick="showTab(this, 'ex4-go')">Go</button>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode(getActiveCodeContentId(this))">
+                                        <i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span>
+                                    </button>
+                                </div>
+                                <div id="ex4-html" class="code-content tab-content" data-endpoint="/code/exercise4" data-lang="html"></div>
+                                <div id="ex4-go" class="code-content tab-content" data-endpoint="/code/exercise4/go" data-lang="go" style="display:none;"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -350,7 +444,21 @@
                 <div class="interactive-zone mt-4">
                     <div class="row g-0">
                         <div class="col-md-6"><div class="pane-header"><span data-translate="liveDemo">Live Demo</span><button class="btn btn-sm btn-outline-secondary" hx-get="/exercise5/reset" hx-target="#ex5-response-wrapper" hx-swap="innerHTML" data-translate="reset">Reset</button></div><div class="demo-pane" id="ex5-response-wrapper"><div id="ex5-response"><form hx-post="/exercise5/submit" hx-target="#ex5-response" hx-swap="outerHTML" hx-indicator="#ex5-indicator"><div class="mb-3"><label for="name-ex5" class="form-label" data-translate="name">Name</label><input type="text" id="name-ex5" name="name" class="form-control" required></div><button type="submit" class="btn btn-success"><span data-translate="submit">Submit</span><span class="spinner-border spinner-border-sm htmx-indicator" id="ex5-indicator"></span></button></form></div></div></div>
-                        <div class="col-md-6"><div class="code-pane"><div class="pane-header"><span data-translate="code">Code</span><button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode('ex5-code-content')"><i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span></button></div><div id="ex5-code-content" class="code-content" data-endpoint="/code/exercise5"></div></div></div>
+                        <div class="col-md-6">
+                            <div class="code-pane">
+                                <div class="pane-header">
+                                    <div class="d-flex align-items-center">
+                                        <button class="btn btn-sm btn-light me-2 active" onclick="showTab(this, 'ex5-html')">HTML</button>
+                                        <button class="btn btn-sm btn-light" onclick="showTab(this, 'ex5-go')">Go</button>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode(getActiveCodeContentId(this))">
+                                        <i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span>
+                                    </button>
+                                </div>
+                                <div id="ex5-html" class="code-content tab-content" data-endpoint="/code/exercise5" data-lang="html"></div>
+                                <div id="ex5-go" class="code-content tab-content" data-endpoint="/code/exercise5/go" data-lang="go" style="display:none;"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -364,7 +472,21 @@
                 <div class="interactive-zone mt-4">
                     <div class="row g-0">
                         <div class="col-md-6"><div class="pane-header"><span data-translate="liveDemo">Live Demo</span><button class="btn btn-sm btn-outline-secondary" hx-get="/exercise6/reset" hx-target="#contact-1" hx-swap="outerHTML" data-translate="reset">Reset</button></div><div class="demo-pane"><div id="contact-1" class="p-2 border rounded" hx-target="this" hx-swap="outerHTML"><p class="mb-1"><strong>Name:</strong> Jane Doe</p><p class="mb-2"><strong>Email:</strong> jane.doe@example.com</p><button class="btn btn-primary btn-sm" hx-get="/exercise6/contact/1" data-translate="clickToEdit">Click To Edit</button></div></div></div>
-                        <div class="col-md-6"><div class="code-pane"><div class="pane-header"><span data-translate="code">Code</span><button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode('ex6-code-content')"><i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span></button></div><div id="ex6-code-content" class="code-content" data-endpoint="/code/exercise6"></div></div></div>
+                        <div class="col-md-6">
+                            <div class="code-pane">
+                                <div class="pane-header">
+                                    <div class="d-flex align-items-center">
+                                        <button class="btn btn-sm btn-light me-2 active" onclick="showTab(this, 'ex6-html')">HTML</button>
+                                        <button class="btn btn-sm btn-light" onclick="showTab(this, 'ex6-go')">Go</button>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyCode(getActiveCodeContentId(this))">
+                                        <i class="bi bi-clipboard"></i> <span class="copy-btn-text" data-translate="copy">Copy</span>
+                                    </button>
+                                </div>
+                                <div id="ex6-html" class="code-content tab-content" data-endpoint="/code/exercise6" data-lang="html"></div>
+                                <div id="ex6-go" class="code-content tab-content" data-endpoint="/code/exercise6/go" data-lang="go" style="display:none;"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

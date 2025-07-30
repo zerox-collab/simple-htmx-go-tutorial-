@@ -431,4 +431,101 @@ func addCodeEndpoints() {
 </body>
 </html>`, baseURL, baseURL)
 	})
+
+	http.HandleFunc("/code/exercise1/go", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		fmt.Fprint(w, `// Exercise 1: Click to Change Text
+http.HandleFunc("/exercise1", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "<button id=\"ex1-target\" class=\"btn btn-success\" hx-post=\"%s\" hx-swap=\"outerHTML\">Clicked! ✅</button>", endpoint("/exercise1"))
+}))
+http.HandleFunc("/exercise1/reset", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "<button id=\"ex1-target\" class=\"btn btn-primary\" hx-post=\"%s\" hx-swap=\"outerHTML\">Click Me</button>", endpoint("/exercise1"))
+}))`)
+	})
+
+	http.HandleFunc("/code/exercise2/go", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		fmt.Fprint(w, `// Exercise 2: Simple Click to Load
+http.HandleFunc("/exercise2", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprint(w, "Hello, HTMX! This content was loaded from the server. 🎉")
+}))
+http.HandleFunc("/exercise2/reset", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprint(w, "")
+}))`)
+	})
+
+	http.HandleFunc("/code/exercise3/go", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		fmt.Fprint(w, `// Exercise 3: Polling for Updates
+http.HandleFunc("/exercise3", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "Server time is: <strong>%s</strong>", time.Now().Format("03:04:05 PM"))
+}))
+http.HandleFunc("/exercise3/reset", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprint(w, "Loading server time...")
+}))`)
+	})
+
+	http.HandleFunc("/code/exercise4/go", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		fmt.Fprint(w, `// Exercise 4: Echo User Input
+http.HandleFunc("/exercise4", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
+    userInput := r.URL.Query().Get("user-input")
+    fmt.Fprintf(w, "You typed: <strong>%s</strong>", userInput)
+}))
+http.HandleFunc("/exercise4/reset", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprint(w, "")
+}))`)
+	})
+
+	http.HandleFunc("/code/exercise5/go", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		fmt.Fprint(w, `// Exercise 5: Form Submission
+http.HandleFunc("/exercise5/submit", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
+    time.Sleep(1 * time.Second)
+    name := r.PostFormValue("name")
+    log.Println("Received form submission:", name)
+    fmt.Fprintf(w, "<div class=\"alert alert-success\" id=\"ex5-response\">Thank you, %s! Your message has been received.</div>", name)
+}))
+http.HandleFunc("/exercise5/reset", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
+    // Pass the dynamic URL into the template
+    tmpl := template.Must(template.New("form-reset").Parse("\n        <div id=\"ex5-response\">\n            <form hx-post=\"{{.SubmitURL}}\" hx-target=\"#ex5-response\" hx-swap=\"outerHTML\" hx-indicator=\"#ex5-indicator\">\n                <div class=\"mb-3\">\n                    <label for=\"name\" class=\"form-label\">Name</label>\n                    <input type=\"text\" id=\"name\" name=\"name\" class=\"form-control\" required>\n                </div>\n                <button type=\"submit\" class=\"btn btn-success\">\n                    Submit <span class=\"spinner-border spinner-border-sm htmx-indicator\" id=\"ex5-indicator\"></span>\n                </button>\n            </form>\n        </div>\n    "))
+    tmpl.Execute(w, map[string]string{
+        "SubmitURL": endpoint("/exercise5/submit"),
+    })
+}))`)
+	})
+
+	http.HandleFunc("/code/exercise6/go", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		fmt.Fprint(w, `// Exercise 6: Click to Edit
+http.HandleFunc("/exercise6/contact/1", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
+    // Pass dynamic URLs into the contact templates
+    data := map[string]interface{}{
+        "Name":      "Jane Doe",
+        "Email":     "jane.doe@example.com",
+        "ActionURL": endpoint("/exercise6/contact/1"),
+        "ResetURL":  endpoint("/exercise6/reset"),
+    }
+
+    if r.Method == http.MethodPut {
+        data["Name"] = r.PostFormValue("name")
+        data["Email"] = r.PostFormValue("email")
+        tmpl, _ := template.New("contact-view").Parse(contactViewTmpl)
+        tmpl.Execute(w, data)
+        return
+    }
+
+    tmpl, _ := template.New("contact-edit").Parse(contactEditTmpl)
+    tmpl.Execute(w, data)
+}))
+http.HandleFunc("/exercise6/reset", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
+    data := map[string]interface{}{
+        "Name":      "Jane Doe",
+        "Email":     "jane.doe@example.com",
+        "ActionURL": endpoint("/exercise6/contact/1"),
+    }
+    tmpl, _ := template.New("contact-view").Parse(contactViewTmpl)
+    tmpl.Execute(w, data)
+}))`)
+	})
 }
